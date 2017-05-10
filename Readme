@@ -1,0 +1,50 @@
+To start back up of new application use the template in "new_app" directory
+
+In the "new_app.conf" file:
+Set app_name and snap_dir.
+Also you can change when the full backup must be performed and how long data should be stored.
+Save this file as "app_name.conf".
+
+In the "new_app.sh" file:
+Change source_file to your app_name.conf.
+
+For database backup add (or uncomment) these line(s):
+../scripts/mysql_dump.sh $source_file your_db_name
+../scripts/mysql_dump.sh $source_file db2_name
+
+For data backup add (or uncomment) these line(s):
+../scripts/data_backup.sh $source_file /path/to/directory
+
+To remove files older than days specified in your app_name.conf file:
+../scripts/rotate.sh $source_file data/$app_name.tar.gz
+../scripts/rotate.sh $source_file db/your_db_name.sql.tar.gz
+../scripts/rotate.sh $source_file db/db2_name.sql.tar.gz
+
+Save this file as "app_name.sh".
+Do the following command:
+chmod +x app_name.sh
+
+That's all regarding to application.
+
+File "common.conf" contains common settings for all applications.
+Everything is commented here.
+For example you can change email addresses to receive logs about backups.
+Please take a look into this file and check if everything is right.
+
+
+Now you just need to add the task to you crontab to do an automatic backups.
+
+You can quickly do this with the "cron_install.sh" file:
+
+For every application you need to add these lines (don't forget to change app number in "app#_name"):
+
+Setup application name:
+app#_name="app_name"
+
+Just change app_number:
+grep -v "# $app#_name backup" tmpcron > temp; mv temp tmpcron
+
+Just change all app_numbers (even after the comment character). And of course dont forget to setup appropriate cron time:
+echo "* * * * * cd /root/backup/$app#_name && ./$app#_name.sh > $app#_name.log 2>&1 # $app#_name backup" >> tmpcron
+
+Please see an existing example in the file if there is some misunderstood.
